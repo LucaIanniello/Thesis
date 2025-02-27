@@ -166,6 +166,10 @@ class ReplayBufferLearnedReward(abc.ABC, ReplayBuffer):
       mask,
       pixels,
   ):
+    """The insert method in the ReplayBufferLearnedReward class is responsible for adding new experiences 
+    to the replay buffer. This method also handles the computation of learned rewards using a model that 
+    processes image data."""
+    
     if len(self.obses_staging) < self.batch_size:
       self.obses_staging.append(obs)
       self.next_obses_staging.append(next_obs)
@@ -213,6 +217,12 @@ class ReplayBufferDistanceToGoal(ReplayBufferLearnedReward):
 
 class ReplayBufferGoalClassifier(ReplayBufferLearnedReward):
   """Replace the environment reward with the output of a goal classifier."""
+  
+  """The model.infer method is used to forward the pixels through the model and compute the reward.
+  The sigmoid applied then allows to apply the sigmoid activation function. 
+  The sigmoid is used because the network used is a Multi-Layer Perceptron (MLP) with a single output unit."""
+  
+  """prob.item() allows to convert a probability tensor in a scalar value"""
 
   def _get_reward_from_image(self):
     image_tensors = [self._pixel_to_tensor(i) for i in self.pixels_staging]
