@@ -1,0 +1,281 @@
+1) Action Scene Graphs for Long-Form Understanding of  egocentric Videos
+
+Egocentric Action Scene Graphs are temporal dynamic graphs (G(t)) capturing the action verbs (nodes in blue), direct or activeobjects (nodes in green), and other objects (nodes in yellow) involved in the activity performed by a camera wearer (the orange CW node).Edges between nodes represent relationship between the verb and the objects or between object pairs. The graph evolves through timeproviding a long-from representation of the egocentric video (dashed lines). Objects of interaction are grounded with bounding boxes.
+
+In this paper, we introduce a novel graph-based representation of actions performed by the camera wearer in anegocentric video, which we term Egocentric Action SceneGraph (EASG). The proposed representation builds on theliterature of scene graphs [15, 16, 38] to extend the classicverb-noun action representation available in egocentric vision datasets [5, 6, 9, 12, 22] to a structured format in whicha sequence of actions performed by the camera wearer isrepresented with a temporal dynamic graph encoding andgrounding to the video the objects involved in the action,the action verb, and the main relationships between the considered objects (see Figure 1). EASGs naturally model thetemporal evolution of egocentric actions, thus providing arich representation to be exploited in a variety of tasks requiring long-form video understanding.
+
+An Egocentric Action Scene Graph (EASG) is a time-varying directed graph G(t) = (V (t), E(t)), where nodes V (t) representeither the camera wearer (vcw(t)), the action verb (vverb(t)), or the involved objects. Edges E(t) represent relationships e(vi(t), vj (t))between node pairs. Each node, except for the CW node, can have one or more attributes att(vj (t)) (indicated in blue). Each object hasthree grounding bounding boxes in the P RE, P NR and P OST frames (highlighted in orange). Nodes vj representing the same objectinstance maintain the same index across different timesteps (e.g., v1(t) and v1(t + 1) highlighted in red).
+
+We formalize an EASG as a time-varying directed graphG(t) = (V (t), E(t)), where V (t) is the set of nodes at timet and E(t) is the set of edges between such nodes (Figure 2). Each temporal realization of the graph G(t) corresponds to an egocentric action spanning over a set of threeframes defined as in [12]: the precondition (PRE), the pointof no return (PNR) and the postcondition (POST) frames. G(t) has twofixed nodes: the camera wearer node vcw(t) representingthe camera wearer, and the verb node vverb(t), describingthe action performed by the camera wearer at time t. Eachgraph G(t) also contains a set of object nodes Vobj (t) encoding the objects involved in the actions. In this formulation, the camera wearer’s hands will appear as object nodes.
+
+The verb node is associated to a verb class attribute:att(vverb(t)) = verb. Noun nodes vi(t) are associated toa noun class attribute noun and to three bounding box attributes grounding the noun to the P RE(t), P NR(t) andP OST(t) frames associated to the action taking place attime t: att(vi(t)) = (noun, boxP RE, boxP NR, boxP OST ).
+
+The edges in the graph describe the relationships between nodes. Let vi(t) and vj (t) be two nodes in thegraph. Then, we can define an edge (vi(t), vj (t)) ∈ E(t) ifthere is a relationship between the nodes vi(t) and vj (t)at time t. We represent the existence of an edge between nodes vi(t) and vj (t) using the function et, such thatet(vi(t), vj (t)) = r, if there is a relationship r betweennodes vi(t) and vj (t); and et(vi(t), vj (t)) = ∅ otherwise.We require r ∈ R, where R is the set of possible relationships between nodes.
+
+We add by default the camera wearernode vcw(t), the verb node vverb(t), and set the default action edge et(vcw(t), vverb(t)) = action. The verb attributeof vverb(t) is set by extracting the verb belonging to thenarration r associated to the current annotation ati. We theninitialize a new object node nk(t) to represent the manipulated object. We set the noun and box attributes of nk(t) asthe noun n and bounding box bo annotations included in ati(n, bo ∈ ati). We add a direct object edge between vverb(t)and nk(t): et(vverb(t), nk(t)) = direct object.
+
+Wethen ask the annotators to specify and ground any additionalobjects which may be linked to the verb node vverb or anyexisting object nodes.
+
+The validation stage aggregates the data received from thethree annotators and ensures the quality of the final annotations. In this stage, for each (Gi1(t), Gi2(t), Gi3(t)) graphtuple, we show the annotators the P RE, P NR, and P OSTframes, the video clip sampled around the P NR and ask aset of questions aiming to sort out inconsistencies acrossthe three graphs
+
+The graphs Gi(t) obtained through the annotation and validation stages are static graphs, meaning that node indices at different timestamps do not necessarily indicate the sameobject
+
+Each graph G(t) is represented asa string of triplets, where each triplet encapsulates therelationship between nodes (e.g., CW - verb - wash;wash - direct object - car; wash - with - sponge). Asan output, we request to provide the future unobservedscene graph G(t + T) in the same triplet format. Fromthe predicted graph, we extract the action as the pair ofverb and direct object node class for evaluation. In theverb-noun baseline, the input sequence is represented assvn = [svn(t0), svn(t0 + 1), ..., svn(t0 + T − 1)], witht0 + T − 1 ≥ 20. 
+
+
+2) RoboEXP: Action-Conditioned Scene Graph via Interactive Exploration for Robotic Manipulation
+
+We introduce the novel task of interactive scene exploration, whereinrobots autonomously explore environments and produce an action-conditionedscene graph (ACSG) that captures the structure of the underlying environment.
+
+The robot reasons aboutwhat and how to explore an object, accumulating new information through theinteraction process and incrementally constructing the ACSG
+
+In this work, we investigate the interactive scene exploration task, where the goal is to efficientlyidentify all objects, including those that are directly observable and those that can only be discoveredthrough interaction between the robot and the environment (Fig. 1). Towards this goal, we present anovel scene representation called action-conditioned 3D scene graph (ACSG). Unlike conventional3D scene graphs that focus on encoding static relations, ACSG encodes both spatial relationships andlogical associations indicative of action effects 
+
+RoboEXP can handle diverse exploration tasks in a zero-shot manner, constructing complex actionconditioned 3D scene graph in various scenarios, including those involving obstructing objects and requiring multi-step reasoning 
+
+a) Exploration: The robot autonomously explores by interacting with the environment togenerate a comprehensive ACSG. This graph is used to catalog the locations and relationships of items. (b)Exploitation: Utilizing the constructed scene graph, the robot completes downstream tasks by efficientlyorganizing the necessary items according to the desired spatial and relational constraints.
+
+Scene Graphs [20, 21] represent objects and their relations [22–24] in a scene via a graph structure.Previous studies generate scene graphs from images [21, 25, 26] or 3D scenes [27], and further withthe assistance of large language models (LLMs) [28, 29]. While previous works model scene graphsin static 2D or 3D scenes, we generate action-conditioned scene graphs that integrate actions as coreelements, depicting interactive relationships between objects and actions
+
+Robotic Exploration aims to autonomously navigate [9, 11, 39–45], interact with [12, 46, 46–50],and gather information [51–53] from environments it has never encountered before
+
+An action-conditioned 3D scene graph (ACSG) is an actionable, spatial-topological representation that models objects and their interactive and spatial relations in a scene. Formally, ACSG is a directed acyclic graph G = (V, E) where each node represents either an object or an action, and edges Erepresent their interaction relations. The object node oi = (si, pi) ∈ V encodes the semantics siand geometry pi of each object, whereas the action node ak = (ak, Tk) ∈ V encodes high-levelaction type ak and low-level primitives Tk to perform the actions
+
+Formally, at each time t,based on our past graph estimation Gt−1, and past sensor observations Ot−1, our agent takes anaction At, which causes the environment to transition to a new state, and the agent receives a newobservation Ot, which is used to update its current inferred graph G
+
+The goal of the exploration is simple: discover and explore all the nodes ofthe scene graph in as little time as possible. We thus formulate a reward function with three terms:Rt = Rgraph t+ Rexplore t+ Rtime, where Rgraph t= |Vt| − |Vt−1| promotes our agent to discoveras many nodes as possible to the graph, Rexplore t= max(0, |Ut−1| − |Ut|) gives a positive rewardto actions that reduce the unexplored node set, which prioritizes the agent to explore previouslyunexplored nodes (note that an action can lead to the discovery of new unexplored nodes being addedto the graph), and immediate reward Rtime = −λ, 0 < λ < 1 is a negative time reward that enhancesefficiency and terminate the exploration when there is no more node to explore.
+
+Given multiple RGBD observations from different viewpoints, the objectiveof the perception module (Fig. 3a) is to detect and segment objects while extracting their semantic features.
+
+The memory module (Fig. 3b) handles merging across different viewpoints andtime steps. To merge across different viewpoints, we project 2D information to 3D and leverage theinstance merging strategy similar to Lu et al. [95] to attain consistent 3D information. 
+
+The primary goal of the decision module (Fig. 3c) is to identify theappropriate object and corresponding skill to enhance the effectiveness and efficiency of interactivescene exploration
+
+In the action module (Fig. 3d), our primary focus is on autonomously constructingthe ACSG through effective and efficient interaction. 
+
+3)INSTANT POLICY: IN-CONTEXT IMITATION LEARNING VIA GRAPH DIFFUSION
+
+4) My View is the Best View: Procedure Learning from Egocentric Videos
+
+5) PRIME: Scaffolding Manipulation Tasks with Behavior primitives for Data-Efficient Imitation Learning
+
+6) Graph Inverse Reinforcement Learning from Diverse Videos
+
+In this paper, we argue that thetrue potential of third-person IRL lies in increasing the diversity of videos forbetter scaling. To learn a reward function from diverse videos, we propose toperform graph abstraction on the videos followed by temporal matching in thegraph space to measure the task progress. Our insight is that a task can be described by entity interactions that form a graph, and this graph abstraction canhelp remove irrelevant information such as textures, resulting in more robustreward functions. 
+
+As an alternative to manual design of reward functions, inverse RL (IRL) has emerged as a promisingparadigm for policy learning. By framing the reward specification as a learning problem, operatorscan specify a reward function based on video examples. While imitation learning typically requiresdemonstrations from a first-person perspective, IRL can in principle learn a reward function, i.e.,a measure of task progression, from any perspective, including third-person videos of humansperforming a task. 
+
+Our key insight is that, while videos may be ofgreat visual diversity, their underlying scene structure and agent-object interactions can be abstractedvia a graph representation. Specifically, instead of directly using images, we extract object boundingboxes from each frame using an off-the-shelf detector, and construct a graph abstraction where eachobject is represented as a node in the graph
+
+Therefore, we propose to employ Interaction Networks [5] on our graph representationto explicitly model interactions between entities. 
+
+We extract object bounding boxes from video sequences using an off-the-shelfdetector, and construct a graph abstraction of the scene. We model graph-abstracted object interactionsusing Interaction Networks [5], and learn a reward function by aligning video embeddings temporally.We then train image-based RL policies using our learned reward function, and deploy on a real robot.
+
+Our Graph Inverse Reinforcement Learning (GraphIRL) framework,shown in Figure 2, consists of building an object-centric graph abstraction of the video demonstrationsand then learn an embedding space that captures task progression by exploiting the temporal cuein the videos. This embedding space is then used to construct a domain invariant and embodimentinvariant reward function which can be used to train any standard reinforcement learning algorithm.
+
+However, instead of directly using images,we propose a novel object-centric graph representation, which allows us to learn an embedding spacethat not only captures task-specific features, but depends solely on the spatial configuration of objectsand their interactions
+
+Given video frames {I1i, I2i, . . . , Iki}, we first extract object bounding boxes from each frame using an off-the-shelf detector. Given N bounding boxes for an image, werepresent each bounding box as a 4 + m dimensional vector oj = {x1, y1, x2, y2, d1, d2, . . . , dm},where the first 4 dimensions represent the leftmost and rightmost corners of the bounding box, andthe remaining m dimensions encode distances between the centroids of the objects. For each frameIj iwe extract an object-centric representation Ij 0i= {o1, o2, . . . , om} such that we can represent ourdataset of demonstrations as D0 = {V10, V 20, . . . , V n0} where Vi0is the sequence of bounding boxescorresponding to video Vi. 
+
+we propose a Spatial Interaction Encoder Network to explicitly modelobject-object interactions. Specifically, given a sequence Vifrom D0, we model each element I00as a graph, G = (O, R), where O is the set of objects {o1, o2, . . . , om}, m is the total number ofobjects in I0, and R denotes the relationship between objects (i.e., whether two objects interact witheach other). For simplicity, all objects are connected with all other objects in the graph such thatR = {(i, j) | i = j ∧ i ≤ m ∧ j ≤ m}.
+
+In this work, we employ Temporal Cycle Consistency (TCC) [6] loss to learn temporal alignment.TCC optimizes for alignment by learning an embedding space that maximizes one-to-one nearestneighbour mappings between sequences. 
+
+In our case, the cycle consistencyis applied on the graph abstraction instead of image features as done in the aforementioned videoalignment methods.
+
+We thereforechoose to define our reward function asr(o) = −c1||ψ(o) − g||2, with ng =Xψ(Im0ii), i=1(4)where o is the current observation, ψ is the Spatial Interaction Encoder Network from Section 3,g is the representative goal frame, miis the length of sequence V0iand c is a scaling factor. Thescaling factor c is computed as the average distance between the first and final observation of allthe training videos in the learned embedding space. Note, that the range of the learned reward is(−∞, 0]. Defining the reward function in this way gives us a dense reward because as the observedstate gets closer and closer to the goal, the reward starts going down and approaches zero when thegoal and current observation are close in embedding space
+
+
+7) TOWARDS UNIVERSAL VISUAL REWARD AND REPRESENTATION VIA VALUE-IMPLICIT PRE-TRAINING
+
+We introduce Value-Implicit Pre-training (VIP), a self-supervised pre-trainedvisual representation capable of generating dense and smooth reward functionsfor unseen robotic tasks. VIP casts representation learning from human videosas an offline goal-conditioned reinforcement learning problem and derives a selfsupervised goal-conditioned value-function objective that does not depend onactions, enabling pre-training on unlabeled human videos. 
+
+Value-Implicit Pre-training (VIP). Pre-trained on large-scale, in-the-wild human videos, frozen VIPnetwork can provide visual reward and representation for downstream unseen robotics tasks and enable diversevisuomotor control strategies without any task-specific fine-tuning.
+
+In this paper, we show that such a general reward model can indeed be derived from a pre-trainedvisual representation, and we acquire this representation by treating representation learning fromdiverse human-video data as a big offline goal-conditioned reinforcement learning problem
+
+Our key insight is that instead of solving the impossible primalproblem of direct policy learning from out-of-domain, action-free videos, we can instead solve theFenchel dual problem of goal-conditioned value function learning. This dual value function, as wewill show, can be trained without actions in an entirely self-supervised manner, making it suitable forpre-training on (out-of-domain) videos without robot action labels.
+
+VIP is able to capture a general notion of goal-directed task progress that makesfor effective reward-specification for unseen robot tasks specified via goal images. 
+
+Given a choice of representation φ, every evaluation task can beinstantiated as a Markov decision process M(φ) := (φ(O), A, R(ot, ot+1; φ, g), T, γ, g), in whichthe state space is the induced space of observation embeddings, and the task is specified via a (set of)goal image(s) g. Specifically, for a given transition tuple (ot, ot+1), we define the reward to be thegoal-embedding distance difference (Lee et al., 2021; Li et al., 2022):
+
+While human videos are out-of-domain data for robots, they are in-domain for learning a goalconditioned policy πH over human actions, aH ∼ πH(φ(o) | φ(g)), for some human action spaceAH. Therefore, given that human videos naturally contain goal-directed behavior, one reasonable ideaof utilizing offline human videos for representation learning is to solve an offline goal-conditionedRL problem over the space of human policies and then extract the learned visual representation
+
+In particular, since our goal is to acquire a value functionthat extracts a general notion of goal-directed task progress from passive offline human videos, we set˜r(o, g) = I(o == g) − 1, which we refer to as δg(o) in shorthand. This reward provides a constantnegative reward when o is not the provided goal g, and does not require any task-specific engineering.
+
+In particular, p(g) can be thought of the distribution of “anchor” observations, µ0(s; g) the distributionof “positive” samples, and D(o, o0; g) the distribution of “negative” samples. Counter-intuitively andin contrast to standard single-view time contrastive learning (TCN), in which the positive observationsare temporally closer to the anchor observation than the negatives, equation 5 has the positives tobe as temporally far away as possible, namely the initial frame in the the same video sequence,and the negatives to be middle frames sampled in between.
+
+Therefore, the repulsionof the negative observations is an implicit, emergent property from the optimization of equation 5,instead of an explicit constraint as in standard (time) contrastive learning.
+
+First, the explicitattraction of the initial and goal frames enablescapturing long-range semantic temporal dependency as two frames that meaningfully indicatethe beginning and end of a task are made closein the embedding space.
+
+
+8) Learning Fine-Grained Bimanual Manipulation with
+Low-Cost Hardware
+
+9) A Survey of Imitation Learning: Algorithms, Recent
+Developments, and Challenges
+
+IRL involves an apprenticeagent that aims to infer the reward function underlying theobserved demonstrations, which are assumed to come froman expert who acts optimally [41]. Once the reward functionis inferred, it is optimized to train an apprentice policy throughRL [42].RL agents, unlike the agents in BC, learn by continuallyinteracting with their environment, observing the consequencesof their actions, and altering their behavior to maximize longterm cumulative reward 
+
+Because of this capability, IRL is less sensitive tocovariate shift compared to BC [14].
+
+Firstly, IRL can be computationally expensive and resourceintensive
+
+The second major challenge of IRL arises due to theinherent ambiguity in the relationship between the policy andthe reward function. Specifically, a policy can be optimal withrespect to an infinite number of reward functions 
+
+There are roughly three categories of IRL methodsthat aim to address this ambiguity 
+
+The first category is maximum-margin methods. The keyidea in maximum-margin methods is to infer a reward functionthat explains the optimal policy more thoroughly than all otherpolicies by a margin.
+Another major work is maximummargin planning (MMP) [54] which seeks to find a weightedlinear mapping of features to rewards so that the estimatedpolicy is “close” to the demonstrated behaviors. [55], [56]build on and extend MMP to nonlinear hypothesis spaces byutilizing a family of functional gradient techniques.
+
+The second category of IRL algorithms aims to solve theambiguity problem by maximizing the entropy of the resultingpolicy. MaxEntIRL 
+
+Wulfmeier et al. [61] propose maximum entropy deep IRL,a generalization of MaxEntIRL that utilizes neural networksto model complex, nonlinear reward functions
+
+Bayesian algorithms constitute the third category of IRLalgorithms. Methods under this category use the expert’s actions as the evidence for updating the reward function estimate.A posterior distribution over candidate reward functions isderived from a prior distribution over the rewards and a likelihood of the reward hypothesis.
+
+Analytically obtaining the posterior in thecontinuous space of reward functions is extremely difficult.To address this issue, [63] uses Markov chain Monte Carlo(MCMC) to derive a sample-based estimate of the posteriormean. Instead of computing the posterior mean, [64] computesthe maximum a posteriori (MAP) reward function. [64] arguesthat the posterior mean is not the most suitable approachfor reward inference as it integrates over the entire rewardspace, even those not consistent with the observed behavior,in the loss function
+
+Most existing IRL algorithms rely on the unrealistic assumption that the transition model, and sometimes the expert’spolicy, are known beforehand [47], [50], [54], [65]. However,in real-world scenarios, the agent often has to estimate theexpert policy and transition dynamics from samples, leadingto errors in the recovered reward function [68], [69].
+
+
+10) Unsupervised Perceptual Rewards for Imitation Learning
+
+Our algorithmaims to discover not only the high-level goal of a task, butalso the implicit sub-goals and steps that comprise morecomplex behaviors. Extracting such sub-goals can allow theagent to make maximal use of information contained in ademonstration
+
+Given a few demonstration videos of the same action, our method discovers intermediate steps, then trains aclassifier for each step on top of the mid and high-level representations of a pre-trained deep model (in this work, we use all activationsstarting from the first “mixed” layer that follows the first 5 convolutional layers). The step classifiers are then combined to produce a singlereward function per step prior to learning. These intermediate rewards are combined into a single reward function
+
+Our approach can be seen as an instance of the moregeneral inverse reinforcement learning framework [20]. Inversereinforcement learning can be performed with a variety ofalgorithms, ranging from margin-based methods [2, 27] to methods based on probabilistic models [25, 35]. Most similarin spirit to our method is the recently proposed SWIRL algorithm [1] and non-parametric reward segmentation approaches[26, 19, 21], which like our method attempts to decomposethe task into sub-tasks to learn a sequence of local rewards.
+
+In work that has specifically examinedthe problem of learning reward functions from images, onecommon approach to image-based reward functions has beento directly specify a “target image” by showing the learnerthe raw pixels of a successful task completion state, andthen using distance to that image (or its latent representation)as a reward function [18, 12, 31]. However, this approachhas several shortcomings. First, the use of a target imagepresupposes that the system can achieve a substantially similarvisual state, which precludes generalization to semanticallysimilar but visually distinct situations. Second, the use of atarget image does not provide the learner with informationabout which facet of the image is more or less importantfor task success, which might result in the learner excessivelyemphasizing irrelevant factors of variation (such as the colorof a door due to light and shadow) at the expense of relevantfactors (such as whether or not the door is open or closed)
+
+The approach we propose in this work, which can beinterpreted as a simple and efficient approximation to IRL,can use demonstrations that consist of videos of a humanperforming the task using their own body, and can acquirereward functions with intermediate sub-goals using just a fewexamples. This kind of efficient vision-based reward learningfrom videos of humans has not been demonstrated in prior IRLwork. The idea of perceptual reward functions using raw pixelswas also explored by [11] which, while sharing the same spiritas this work, was limited to synthetic tasks and used singleimages as perceptual goals rather than multiple demonstrationvideos.
+
+In this work, we use a very simple approximation to theMaxEnt IRL model. In MaxEnt IRL, thedemonstrated trajectories τ are assumed to be drawn from aBoltzmann distribution according to.
+
+The principalcomputational challenge in MaxEnt IRL is to approximateZ, since the states at each time step are not independent,but are constrained by the system dynamics.
+
+When faced with a difficult learning problem in extremelylow-data regimes, a standard solution is to resort to simple,biased models, so as to minimize overfitting. We adopt precisely this approach in our work: instead of approximating thecomplex posterior distribution over trajectories under nonlineardynamics, we use a simple biased model that affords efficientlearning and minimizes overfitting. 
+
+This correspondsto the IRL equivalent of a na¨ıve Bayes model: in the sameway that na¨ıve Bayes uses an independence assumption tomitigate overfitting in high-dimensional feature spaces, weuse independence between both time steps and features tolearn from very small numbers of demonstrations.
+
+The simple IRL model in the previous section can be use
+to acquire a single quadratic reward function in terms of the visual features st.
+
+We show that pre-trained models are general enough to beused without retraining. We also show there exists a smallsubset of pre-trained features that are highly discriminativeeven for previously unseen scenes and which can be usedto reduce the search space for future work in unsupervisedsubgoal discovery.
+
+
+
+
+11) Model-Based Inverse Reinforcement Learning from Visual Demonstrations
+
+In this work, we present a gradient-basedinverse reinforcement learning framework that utilizes a pre-trained visual dynamics model to learn cost functions when given only visual human demonstrations.The learned cost functions are then used to reproduce the demonstrated behaviorvia visual model predictive control
+
+Model-based IRL approaches are thought to be moresample-efficient and hold promises for easier generalization [1]. Yet, thus far, their model-freecounter-parts have been more successful in real world robotics applications with unknown dynamics [2, 3, 4]. Several major challenges remain for model-based IRL: Model-based inverse reinforcement learning comprises two nested optimization problems, an inner and outer optimization step.The inner optimization problem optimizes a policy given a cost function and transition model. 
+
+Our work makes contributions that address these challenges to enable model-based IRL from visualdemonstrations: 1) We train keypoint detectors [9] which extract low-dimensional vision featuresboth on human demonstrations, as well as on the robot and pre-train a dynamics model with whichthe robot can predict how its actions change this low-dimensional feature representation
+
+The proposed system, depicted in Figure 1, comprises of following modules: 1) a keypoint detectorthat produces low-dimensional visual representations, in the form of keypoints, from RGB image˙ inputs; 2) a dynamics model that takes in the current joint state θ,θand actions u and predictsthe keypoints and joint state at the next time step; and 3) a gradient based visual model-predictiveplanner that, given the dynamics model and a cost function, optimizes actions for a given task
+
+We use an autoencoder with a structural bottleneck to detect 2D keypoints that correspond to pixelpositions or areas with maximum variability in the input data. 
+
+Given a trained keypoint detector, we next collect dynamics data to train a dynamics model ˆst+1 =fdyn(st,ut). The dynamics model is trained to predict the next state, from current state st and actionut, where the state st = [zt,θt] combines the low-dimensional visual state zt = gkey(oim,t) and the jointstate θt.
+
+Similar to other visual MPC work [12, 14] weutilize our learned visual dynamics model fdyn to optimize actions u. Two ingredients are necessary to implement this step: 1) a cost function that measures distances in visual latent space; 2)an action optimizer that can minimize that cost function.
+
+Most inverse RL algorithms have an inner andouter optimization loop; the inner loop optimizes actions or policies given the current costfunction parameters ψ, and the outer loop optimizes the cost function parameters given the results of the inner loop. 
+
+In our IRL algorithm, the outer loop optimizes cost parameters ψ and the inner loop optimizesactions u given the current cost. The result of the inner loop step is a predicted latent trajectory τˆ.Intuitively, we want to learn a cost functionCψ, that, when used in the inner loop, minimizes the IRLloss LIRL(τdemo, τˆ) between τˆ and the expert demonstrations τdemo. To put it succinctly, we want tocompute the gradient of LIRL wrt to ψ: ∇ψLIRL.
+
+Our algorithm depends on both, the specification of the IRL loss LIRL and the cost functionparametrization Cψ. Intuitively, the LIRL should measure the distance between the predicted latent trajectory τˆ and the demonstrated latent trajectory τdemo
+
+Time Dependent Weighted Cost Cψ(τˆ,zgoal) = ∑k ∑thψtx,k(zˆxt,k −zxgoal,k)2 +ψty,k(zˆyt,k −zygoal,k)2iThis cost extends the previous formulation to provide a weight for each time step t. This adds moreflexibility to the cost and allows to capture time-dependent importance of specific keypoints. 
+
+Furthermore, our work assumes that demonstrations are given from the perspective ofthe robot. We account for different starting configurations by learning on relative demonstrationsinstead of absolute
+
+12) Algorithms for Inverse Reinforcement Learning
+
+This paper addresses the problem of inverse reinforcement learning in Markov decision processes, that is, the problem of extracting the reward function given observed, optimal behaviour. 
+
+In all cases, a key issue is degeneracy - the existence of a large set of reward functions for which the observed policy is optimal. To remove degeneracy, we suggest some natural heuristics that attempts to pick a reward function that maximally differentiates the observed policy from other, suboptimal policies. 
+
+Given 1) measurements of an agent's behaviour over time, in a variety of circumastances, 2) if needed, measurements of the sensory inputs to that agent; 3) if available, a model of environment. 
+Determine the reward function being optimized. 
+
+Yet it seems clear that in examining animal and human behaviour we must consider the reward function as a unknown to be ascertained through empirical investigation. 
+
+A second motivation arises from the task of constructing an itelligence agent thta can bhevae successfully in a particular domain. 
+
+
+We propose instead to recover the expert's reward function and to use this to generate desirable behaviour. 
+
+Theorem 3. Let a finite state space S, a set of actions A, transition probability matrices and a discount factor y be given. Then the policy pi given by p(s) = a is optimal if and only if, for all a, the reward R satisfies (Pa1 - Pa)(I - yPa1)^-1 R >=0
+
+For finite state MDP, this result characterizes the set of all reinforcement functions that are solutions to the inverse reinforcement learning problem. 
+
+One natural way to choose R is to first demand that it makes pi optimal (and hence solves the IRL problem) and moreover to favor solutions that make any single-step deviation from pi as costly as possible. In other words, we seek to maximize the sum of the differences between the quality of the optimal action and the quality of the next-best action. 
+
+This section addresses the IRL problem for the more realistic case where we have access to the policy pi onlu through a set of actual trajectories in the state space. We fix some initial state distribution D and assume for the unknown policy pi, our goal is to find R suche that pi maximizes E[Vpi(so)]. For each policy pi that we will consider, we will need a way of estimating V(so) for any setting of a a*s. To do this, we first execute m Monte Carlo trajectories under pi. Then, for each i, define V(so) to be what the average empirical return woud have been on these m trajectories if the reward had been R = fi. 
+The inductive step of the algorithm is as follow: We have some set of policies and want to find a setting of the a*s so that resulting reward function satisfies. 
+
+13) Time-Contrastive Networks: Self-Supervised Learning from Video
+
+Imitation of human behaviorrequires a viewpoint-invariant representation that captures therelationships between end-effectors (hands or robot grippers)and the environment, object attributes, and body pose
+
+Time-Contrastive Networks (TCN): Anchor and positiveimages taken from simultaneous viewpoints are encouraged to beclose in the embedding space, while distant from negative imagestaken from a different time in the same sequence.
+
+The main contribution of our work is a representationlearning algorithm that builds on top of existing semanticallyrelevant features (in our case, features from a networktrained on the ImageNet dataset [1, 2]) to produce a metricembedding that is sensitive to object interactions and pose,and insensitive to nuisance variables such as viewpoint and appearance. We demonstrate that this representation can beused to create a reward function for reinforcement learning ofrobotic skills, using only raw video demonstrations for supervision, and for direct imitation of human poses, without anyexplicit joint-level correspondence and again directly fromraw video. 
+
+The core idea is that two frames (anchor andpositive) coming from the same time but different viewpoints(or modalities) are pulled together, while a visually similarframe from a temporal neighbor is pushed apart. This signal serves two purposes: learn disentangled representationswithout labels and simultaneously learn viewpoint invariance for imitation. 
+
+Another way to understand the strongtraining signal that TCNs provide is to recognize the two constraints being simultaneously imposed on the model: alongthe view axis in Fig. 1 the model learns to explain what iscommon between images that look different, while along thetemporal axis it learns to explain what is different betweensimilar-looking images. 
+
+Due to differences in the contexts, direct tracking of thedemonstrated pixel values does not provide a sensible way oflearning the imitation behavior. As described in the previoussection, the TCN embedding provides a way to extractimage features that are invariant to the camera angle and themanipulated objects, and can explain physical interactions inthe world. We use this insight to construct a reward functionthat is based on the distance between the TCN embedding ofa human video demonstration and camera images recordedwith a robot camera
+
+Although we use multiple multi-view videos to train theTCN, the video demonstration consists only of a single videoof a human performing the task from a random viewpoint.
+
+We define a rewardfunction R(vt, wt) based on the squared Euclidean distanceand a Huber-style loss:R(vt, wt) = −αkwt − vtk2 − βqγ + kwt − vtk2where α and β are weighting parameters (empirically chosen), and γ is a small constant. The squared Euclideandistance (weighted by α) gives us stronger gradients whenthe embeddings are further apart, which leads to largerpolicy updates at the beginning of learning. The Huber-styleloss (weighted by β) starts prevailing when the embeddingvectors are getting very close ensuring high precision of thetask execution and fine-tuning of the motion towards the endof the training.
+
+
+14) Temporal Cycle-Consistency Learning
+
+We introduce a self-supervised representation learningmethod based on the task of temporal alignment betweenvideos. The method trains a network using temporal cycleconsistency (TCC), a differentiable cycle-consistency lossthat can be used to find correspondences across time inmultiple videos. The resulting per-frame embeddings canbe used to align videos by simply matching frames usingnearest-neighbors in the learned embedding space.
+
+ We present a self-supervised representation learning technique called temporal cycle consistency (TCC) learning. It is inspiredby the temporal video alignment problem, which refers to the task of finding correspondences across multiple videos despite many factorsof variation. The learned representations are useful for fine-grained temporal understanding in videos. Additionally, we can now alignmultiple videos by simply finding nearest-neighbor frames in the embedding space.
+
+The main contribution of this paper is a new selfsupervised training method, referred to as temporal cycleconsistency (TCC) learning, that learns representations byaligning video sequences of the same action.
+
+Our method differs from these approaches in thatTCC is a self-supervised representation learning methodwhich learns embedding spaces that are optimized to givegood correspondences. Furthermore we address a temporalcorrespondence problem rather than a spatial one.
+
+The core contribution of this work is a self-supervisedapproach to learn an embedding space where two similarvideo sequences can be aligned temporally. More specifically, we intend to maximize the number of points that canbe mapped one-to-one between two sequences by using theminimum distance in the learned embedding space. 
+
+If we use nearest neighbors for matching, one point (shownin black) is cycling back to itself while another one (shown in red)is not. Our target is to learn an embedding space where maximumnumber of points can cycle back to themselves. We achieve it byminimizing the cycle consistency error (shown in red dotted line)for each point in every pair of sequences.
+
+In order to check if a point ui ∈ U is cycle consistent, wefirst determine its nearest neighbor, vj = arg minv∈V||ui−v||. We then repeat the process to find the nearest neighborof vj in U, i.e. uk = arg minu∈U ||vj − u||. The point uiis cycle-consistent if and only if i = k, in other words ifthe point ui cycles back to itself. 
+
+Although cycle-back classification defines a differentiable cycle-consistency loss function, it has no notion ofhow close or far in time the point to which we cycled backis. We want to penalize the model less if we are able to cycleback to closer neighbors as opposed to the other frames thatare farther away in time. The embedding sequences U and V are obtained by encoding video sequences S and T withthe encoder network φ, respectively. 
+
+For the selected point ui in U, soft nearest neighbor computation and cycling back to U again isdemonstrated visually. Finally the normalized distance between the index i and cycling back distribution N(µ, σ2) (which is fitted to β) isminimized.
+
+15) XIRL: Cross-embodiment Inverse Reinforcement Learning
+
+We investigate the visual cross-embodiment imitation setting, in which agentslearn policies from videos of other agents (such as humans) demonstrating the same task,but with stark differences in their embodiments – shape, actions, end-effector dynamics,etc.
+
+Specifically, we present a self-supervised method for Crossembodiment Inverse Reinforcement Learning (XIRL) that leverages temporal cycleconsistency constraints to learn deep visual embeddings that capture task progressionfrom offline videos of demonstrations across multiple expert agents, each performing thesame task differently due to embodiment differences. 
+
+In this work, we propose to enable agents to imitate video demonstrations of experts – including ones withdifferent embodiments – by using a task-specific, embodiment-invariant reward formulation trained viatemporal cycle-consistency (TCC) [7]. We demonstrate how we can leverage an encoder trained with TCCto define dense rewards for downstream reinforcement learning (RL) policies via simple distances in the learned embedding space
+
+ We learn embodiment-invariant visual representations from offline video demonstrations (stick agents on the left) using TCC [7], then use the trained encoder to generate embodiment-invariant visual reward functions that can be usedto learn policies on new embodiments (gripper on the right) with reiforcement learning. 
+
+In the context of third-personimitation learning, including when learning from expert agents with different embodiments, obtainingaccess to ground-truth actions is difficult or impossible. 
+
+The framework consists of first using TCC to self-supervise embodiment-invariant visualrepresentations (Section 3.2), then using a novel embodiment-invariant visual reward function (Section 3.3)to perform cross-embodiment visual imitation via reinforcement learning (Section 3.4).
+
+We train an image encoder φ, that ingests an image I and returns an embedding vector φ(I), using TCC.TCC assumes that there exist semantic temporal correspondences between two video sequences, eventhough they are not labeled and the actions may be executed at different speeds.
+
+When we apply the TCC loss, we compare frames of one agent performingthe task with frames from another, and search for temporal similarities in how both execute the task
+
+We do this by leveragingφ to generate rewards via distances to goal observations in the learned embedding space. Specifically, wedefine the goal embedding g as the mean embedding of the last frame of all the demonstration videos inour offline dataset Dall. Concretely, g=PiN=1φ(viLi)/N, where Liis the length of video vi. Our reward rthen is the scaled negative distance of the current state embedding to the goal embedding g i.e., r(s) =−1/κ·kφ(s)−gk2, where φ(s) is the state embedding at the current timestep and κ is a scale parameterthat ensures the distances are in a range amenable for training reinforcement learning algorithms [23]. 
+
