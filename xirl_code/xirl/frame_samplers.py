@@ -31,7 +31,7 @@ class FrameSampler(abc.ABC):
   def __init__(
       self,
       num_frames,
-      num_ctx_frames=1,
+      num_ctx_frames=1, # IMPORTANTE. AL MOMENTO NON PREVEDE CONTEXT FRAMES.
       ctx_stride=1,
       pattern="*.png",
       seed=None,
@@ -151,7 +151,7 @@ class StridedSampler(SingleVideoFrameSampler):
   def __init__(  # pylint: disable=keyword-arg-before-vararg
       self,
       stride,
-      offset=True,
+      offset=True, #RANDOM STARTING POINT
       *args,
       **kwargs,
   ):

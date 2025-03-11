@@ -1,0 +1,6 @@
+Collecting awscli
+  Downloading awscli-1.38.10-py3-none-any.whl.metadata (11 kB)
+Collecting jax==0.1.66
+  Downloading jax-0.1.66.tar.gz (318 kB)
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
