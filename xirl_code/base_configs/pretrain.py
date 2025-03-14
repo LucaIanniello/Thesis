@@ -16,6 +16,7 @@
 """Default pretraining config values."""
 
 import ml_collections
+import os
 
 
 def get_config():
@@ -43,9 +44,12 @@ def get_config():
   # Dataset params.
   # ============================================== #
   config.data = ml_collections.ConfigDict()
+  # Get the absolute path of the root directory of the config repository
+  config_repo_root = os.path.dirname(os.path.abspath(__file__))
 
+  # Set the relative path to the dataset folder (xmagical in the datasets repo)
+  config.data.root = os.path.join(config_repo_root, "..", "datasets", "xmagical")
   # Absolute path to the dataset root.
-  config.data.root = "/tmp/xirl/datasets/xmagical/"
   # The mini-batch size. Note this only specifies the number of videos to
   # load frames from in a single batch. The effective batch size is actually
   # larger since we sample multiple frame sequences per video.

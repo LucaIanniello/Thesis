@@ -1,5 +1,5 @@
 # Ignore the dataset folder
-/datasets/
+datasets/
 
 # Ignore temporary and cache files
 /tmp/
