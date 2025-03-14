@@ -101,7 +101,7 @@ def main(_):
       )
 
     # Dump experiment metadata as yaml file.
-    with open(osp.join(exp_path, "metadata.yaml"), "wb") as fp:
+    with open(osp.join(exp_path, "metadata.yaml"), "w") as fp:
       yaml.dump(kwargs, fp)
 
 

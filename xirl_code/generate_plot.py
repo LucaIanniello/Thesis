@@ -20,6 +20,9 @@ import os
 import pathlib
 from typing import List
 
+import matplotlib
+matplotlib.use('Agg')  # Use a non-interactive backend
+
 from absl import app
 from absl import flags
 import matplotlib.pyplot as plt
