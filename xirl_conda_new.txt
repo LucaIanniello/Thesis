@@ -1,0 +1,47 @@
+!apt-get update -y
+!apt-get install python3.8 python3.8-distutils
+!update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
+!update-alternatives --config python3
+!apt-get install python3-pip
+!python3 -m pip install --upgrade pip --user
+!python --version
+
+!git clone https://github.com/LucaIanniello/xirl_conda.git
+
+!pip install ipython
+!pip install matplotlib-inline
+!cd xirl_conda && pip install -r requirements.txt
+
+
+# Ricorda di cambiare il file /usr/local/lib/python3.8/dist-packages/torchkit/experiment.py, solo la funzione
+
+# import subprocess
+# import os
+
+# def git_revision_hash():
+#     if not os.path.exists(".git"):
+#         return "unknown"
+#     try:
+#         return subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
+#     except subprocess.CalledProcessError:
+#         return "unknown"
+
+!mkdir -p /tmp/xirl
+!cd /tmp/xirl
+
+
+!mkdir -p /tmp/xirl/datasets
+!cd /tmp/xirl/datasets
+
+
+!git clone https://github.com/LucaIanniello/xirl_dataset.git /tmp/xirl/datasets/
+
+
+
+%cd /content/xirl_conda
+!python pretrain_xmagical_same_embodiment.py --algo goal_classifier --embodiment gripper --unique_name 5
+
+
+%cd /content/xirl_conda
+!python rl_xmagical_learned_reward.py --pretrained_path /tmp/xirl/pretrain_runs/dataset=xmagical_mode=same_algo=goal_classifier_embodiment=gripper_uid=8bd1f3dc-a2e8-4c8b-85bc-899b485be4d9 --seeds 5
+
