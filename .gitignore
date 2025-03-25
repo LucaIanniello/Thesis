@@ -1,7 +1,5 @@
-xirl_conda/
 
-xirl_dataset/
+XIRL/xirl_conda/
+XIRL/xirl_dataset/
 
-stable_baselines3/
-
-imitation/
+Others/
