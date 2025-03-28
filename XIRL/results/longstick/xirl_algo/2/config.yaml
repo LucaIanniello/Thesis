@@ -1,0 +1,54 @@
+action_repeat: 1
+checkpoint_frequency: 50000
+cudnn_benchmark: true
+cudnn_deterministic: false
+eval_frequency: 5000
+frame_stack: 3
+log_frequency: 10000
+num_eval_episodes: 50
+num_seed_steps: 5000
+num_train_steps: 75000
+replay_buffer_capacity: 1000000
+reward_wrapper:
+  pretrained_path: /tmp/xirl/pretrain_runs/dataset=xmagical_mode=same_algo=xirl_embodiment=longstick/
+  type: distance_to_goal
+sac:
+  action_dim: 2
+  action_range: !!python/tuple
+  - -1.0
+  - 1.0
+  actor:
+    action_dim: 2
+    hidden_depth: 2
+    hidden_dim: 1024
+    log_std_bounds:
+    - -5
+    - 2
+    obs_dim: 48
+  actor_betas:
+  - 0.9
+  - 0.999
+  actor_lr: 0.0001
+  actor_update_frequency: 1
+  alpha_betas:
+  - 0.9
+  - 0.999
+  alpha_lr: 0.0001
+  batch_size: 1024
+  critic:
+    action_dim: 2
+    hidden_depth: 2
+    hidden_dim: 1024
+    obs_dim: 48
+  critic_betas:
+  - 0.9
+  - 0.999
+  critic_lr: 0.0001
+  critic_target_update_frequency: 2
+  critic_tau: 0.005
+  discount: 0.99
+  init_temperature: 0.1
+  learnable_temperature: true
+  obs_dim: 48
+save_dir: /tmp/xirl/rl_runs/
+save_video: true
