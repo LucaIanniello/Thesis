@@ -76,46 +76,90 @@ class SweepToTopEnv(BaseEnv):
         )
         self.add_entities([sensor])
         self.__sensor_ref = sensor
-
-        y_coords = [pose[0][1] for pose in DEFAULT_BLOCK_POSES]
-        x_coords = [pose[0][0] for pose in DEFAULT_BLOCK_POSES]
-        angles = [pose[1] for pose in DEFAULT_BLOCK_POSES]
-        if self.rand_layout_full:
-            # The three blocks are located at the same y coordinate but their x
-            # coordinate is randomized.
-            y_coord = self.rng.uniform(-0.1, 0.5)
-            y_coords = [y_coord] * 3
-            x_coords = self.rng.choice(
-                np.arange(-0.8, 0.8, 4.0 * self.SHAPE_RAD),
-                size=self.num_debris,
-                replace=False,
-            )
+        
+        ## RANDOM BLOCKS POSITION
+        robot_x_cord, robot_y_cord = robot_pos
+        goal_x, goal_y, goal_width, goal_height = DEFAULT_GOAL_XYHW
+        space_x_min, space_x_max = -1.1, 1.1
+        space_y_min, space_y_max = -1.1, 1.1 
+        
+        x_coords = []
+        y_coords = []
+        while len(x_coords) < self.num_debris:
+            x = self.rng.uniform(space_x_min, space_x_max)
+            y = self.rng.uniform(space_y_min, space_y_max)
+            
+            if (abs(x - robot_x_cord) > 0.2 and abs(y - robot_y_cord) > 0.2 and  
+                not (goal_x <= x <= goal_x + goal_width and goal_y <= y <= goal_y + goal_height)  # Avoid goal
+               ):
+                x_coords.append(x)
+                y_coords.append(y)
+        
+        angles = [self.rng.uniform(0, 2 * np.pi) for _ in range(self.num_debris)]
         debris_shapes = [DEFAULT_BLOCK_SHAPE] * self.num_debris
-        debris_colors = [DEFAULT_BLOCK_COLOR] * self.num_debris
-        if self.rand_shapes:
-            debris_shapes = self.rng.choice(
-                en.SHAPE_TYPES, size=self.num_debris
-            ).tolist()
-        if self.rand_colors:
-            debris_colors = self.rng.choice(
-                en.SHAPE_COLORS, size=self.num_debris
-            ).tolist()
+        debris_colors = []
+        while len(debris_colors) < self.num_debris:
+            d_color = self.rng.choice(en.SHAPE_COLORS)
+            if d_color != goal_color:
+                debris_colors.append(d_color)
+                
         self.__debris_shapes = [
             self._make_shape(
-                shape_type=shape,
-                color_name=color,
-                init_pos=(x, y),
-                init_angle=angle,
+            shape_type=shape,
+            color_name=color,
+            init_pos=(x, y),
+            init_angle=angle,
             )
             for (x, y, angle, shape, color) in zip(
-                x_coords,
-                y_coords,
-                angles,
-                debris_shapes,
-                debris_colors,
+            x_coords,
+            y_coords,
+            angles,
+            debris_shapes,
+            debris_colors,
             )
         ]
         self.add_entities(self.__debris_shapes)
+            
+        # Not randomized block positions.
+        # y_coords = [pose[0][1] for pose in DEFAULT_BLOCK_POSES]
+        # x_coords = [pose[0][0] for pose in DEFAULT_BLOCK_POSES]
+        # angles = [pose[1] for pose in DEFAULT_BLOCK_POSES]
+        # if self.rand_layout_full:
+        #     # The three blocks are located at the same y coordinate but their x
+        #     # coordinate is randomized.
+        #     y_coord = self.rng.uniform(-0.1, 0.5)
+        #     y_coords = [y_coord] * 3
+        #     x_coords = self.rng.choice(
+        #         np.arange(-0.8, 0.8, 4.0 * self.SHAPE_RAD),
+        #         size=self.num_debris,
+        #         replace=False,
+        #     )
+        # debris_shapes = [DEFAULT_BLOCK_SHAPE] * self.num_debris
+        # debris_colors = [DEFAULT_BLOCK_COLOR] * self.num_debris
+        # if self.rand_shapes:
+        #     debris_shapes = self.rng.choice(
+        #         en.SHAPE_TYPES, size=self.num_debris
+        #     ).tolist()
+        # if self.rand_colors:
+        #     debris_colors = self.rng.choice(
+        #         en.SHAPE_COLORS, size=self.num_debris
+        #     ).tolist()
+        # self.__debris_shapes = [
+        #     self._make_shape(
+        #         shape_type=shape,
+        #         color_name=color,
+        #         init_pos=(x, y),
+        #         init_angle=angle,
+        #     )
+        #     for (x, y, angle, shape, color) in zip(
+        #         x_coords,
+        #         y_coords,
+        #         angles,
+        #         debris_shapes,
+        #         debris_colors,
+        #     )
+        # ]
+        # self.add_entities(self.__debris_shapes)
 
         # Add robot last for draw order reasons.
         self.add_entities([robot])
