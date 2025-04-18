@@ -3,8 +3,10 @@ from typing import Any, Dict, Tuple
 import numpy as np
 from gym import spaces
 
-import xmagical.entities as en
+import xmagical.entities as en 
+from xmagical.entities import EntityIndex
 from xmagical.base_env import BaseEnv
+
 
 DEFAULT_ROBOT_POSE = ((0.0, -0.6), 0.0)
 DEFAULT_BLOCK_COLOR = en.ShapeColor.RED
@@ -27,6 +29,7 @@ class SweepToTopEnv(BaseEnv):
         self,
         use_state: bool = False,
         use_dense_reward: bool = False,
+        use_color_reward: bool = False,
         rand_layout_full: bool = False,
         rand_shapes: bool = False,
         rand_colors: bool = False,
@@ -46,11 +49,14 @@ class SweepToTopEnv(BaseEnv):
         super().__init__(**kwargs)
 
         self.use_state = use_state
-        self.use_dense_reward = use_dense_reward
+        # self.use_dense_reward = use_dense_reward
+        self.use_dense_reward = False
+        self.use_color_reward = True
         self.rand_layout_full = rand_layout_full
         self.rand_shapes = rand_shapes
         self.rand_colors = rand_colors
         self.num_debris = 3
+        self.stage_completed = [False] * self.num_debris
 
         if self.use_state:
             # Redefine the observation space if we are using states as opposed
@@ -77,65 +83,67 @@ class SweepToTopEnv(BaseEnv):
         self.add_entities([sensor])
         self.__sensor_ref = sensor
         
-        ## RANDOM BLOCKS POSITION
-        robot_x_cord, robot_y_cord = robot_pos
-        goal_x, goal_y, goal_width, goal_height = DEFAULT_GOAL_XYHW
-        space_x_min, space_x_max = -1.1, 1.1
-        space_y_min, space_y_max = -1.1, 1.1 
+        # ## RANDOM BLOCKS POSITION
+        # robot_x_cord, robot_y_cord = robot_pos
+        # goal_x, goal_y, goal_width, goal_height = DEFAULT_GOAL_XYHW
+        # space_x_min, space_x_max = -1.1, 1.1
+        # space_y_min, space_y_max = -1.1, 1.1 
         
-        x_coords = []
-        y_coords = []
-        while len(x_coords) < self.num_debris:
-            x = self.rng.uniform(space_x_min, space_x_max)
-            y = self.rng.uniform(space_y_min, space_y_max)
+        # x_coords = []
+        # y_coords = []
+        # while len(x_coords) < self.num_debris:
+        #     x = self.rng.uniform(space_x_min, space_x_max)
+        #     y = self.rng.uniform(space_y_min, space_y_max)
             
-            if (abs(x - robot_x_cord) > 0.2 and abs(y - robot_y_cord) > 0.2 and  
-                not (goal_x <= x <= goal_x + goal_width and goal_y <= y <= goal_y + goal_height)  # Avoid goal
-               ):
-                x_coords.append(x)
-                y_coords.append(y)
+        #     if (abs(x - robot_x_cord) > 0.2 and abs(y - robot_y_cord) > 0.2 and  
+        #         not (goal_x <= x <= goal_x + goal_width and goal_y <= y <= goal_y + goal_height)  # Avoid goal
+        #        ):
+        #         x_coords.append(x)
+        #         y_coords.append(y)
         
-        angles = [self.rng.uniform(0, 2 * np.pi) for _ in range(self.num_debris)]
-        debris_shapes = [DEFAULT_BLOCK_SHAPE] * self.num_debris
-        debris_colors = []
-        while len(debris_colors) < self.num_debris:
-            d_color = self.rng.choice(en.SHAPE_COLORS)
-            if d_color != goal_color:
-                debris_colors.append(d_color)
+        # angles = [self.rng.uniform(0, 2 * np.pi) for _ in range(self.num_debris)]
+        # debris_shapes = [DEFAULT_BLOCK_SHAPE] * self.num_debris
+        # debris_colors = []
+        # while len(debris_colors) < self.num_debris:
+        #     d_color = self.rng.choice(en.SHAPE_COLORS)
+        #     if d_color != goal_color:
+        #         debris_colors.append(d_color)
                 
-        self.__debris_shapes = [
-            self._make_shape(
-            shape_type=shape,
-            color_name=color,
-            init_pos=(x, y),
-            init_angle=angle,
-            )
-            for (x, y, angle, shape, color) in zip(
-            x_coords,
-            y_coords,
-            angles,
-            debris_shapes,
-            debris_colors,
-            )
-        ]
-        self.add_entities(self.__debris_shapes)
+        # self.__debris_shapes = [
+        #     self._make_shape(
+        #     shape_type=shape,
+        #     color_name=color,
+        #     init_pos=(x, y),
+        #     init_angle=angle,
+        #     )
+        #     for (x, y, angle, shape, color) in zip(
+        #     x_coords,
+        #     y_coords,
+        #     angles,
+        #     debris_shapes,
+        #     debris_colors,
+        #     )
+        # ]
+        # self.add_entities(self.__debris_shapes)
             
         # Not randomized block positions.
-        # y_coords = [pose[0][1] for pose in DEFAULT_BLOCK_POSES]
-        # x_coords = [pose[0][0] for pose in DEFAULT_BLOCK_POSES]
-        # angles = [pose[1] for pose in DEFAULT_BLOCK_POSES]
+        y_coords = [pose[0][1] for pose in DEFAULT_BLOCK_POSES]
+        x_coords = [pose[0][0] for pose in DEFAULT_BLOCK_POSES]
+        angles = [pose[1] for pose in DEFAULT_BLOCK_POSES]
         # if self.rand_layout_full:
-        #     # The three blocks are located at the same y coordinate but their x
-        #     # coordinate is randomized.
-        #     y_coord = self.rng.uniform(-0.1, 0.5)
-        #     y_coords = [y_coord] * 3
-        #     x_coords = self.rng.choice(
-        #         np.arange(-0.8, 0.8, 4.0 * self.SHAPE_RAD),
-        #         size=self.num_debris,
-        #         replace=False,
-        #     )
-        # debris_shapes = [DEFAULT_BLOCK_SHAPE] * self.num_debris
-        # debris_colors = [DEFAULT_BLOCK_COLOR] * self.num_debris
+            # The three blocks are located at the same y coordinate but their x
+            # coordinate is randomized.
+        y_coord = self.rng.uniform(-0.1, 0.5)
+        y_coords = [y_coord] * 3
+        x_coords = self.rng.choice(
+            np.arange(-0.8, 0.8, 4.0 * self.SHAPE_RAD),
+            size=self.num_debris,
+            replace=False,
+        )
+        debris_shapes = [DEFAULT_BLOCK_SHAPE] * self.num_debris
+        colors_set = [en.ShapeColor.RED, en.ShapeColor.BLUE, en.ShapeColor.YELLOW]
+        self.rng.shuffle(colors_set)
+        debris_colors = colors_set[: self.num_debris]
         # if self.rand_shapes:
         #     debris_shapes = self.rng.choice(
         #         en.SHAPE_TYPES, size=self.num_debris
@@ -144,28 +152,30 @@ class SweepToTopEnv(BaseEnv):
         #     debris_colors = self.rng.choice(
         #         en.SHAPE_COLORS, size=self.num_debris
         #     ).tolist()
-        # self.__debris_shapes = [
-        #     self._make_shape(
-        #         shape_type=shape,
-        #         color_name=color,
-        #         init_pos=(x, y),
-        #         init_angle=angle,
-        #     )
-        #     for (x, y, angle, shape, color) in zip(
-        #         x_coords,
-        #         y_coords,
-        #         angles,
-        #         debris_shapes,
-        #         debris_colors,
-        #     )
-        # ]
-        # self.add_entities(self.__debris_shapes)
+        self.__debris_shapes = [
+            self._make_shape(
+                shape_type=shape,
+                color_name=color,
+                init_pos=(x, y),
+                init_angle=angle,
+            )
+            for (x, y, angle, shape, color) in zip(
+                x_coords,
+                y_coords,
+                angles,
+                debris_shapes,
+                debris_colors,
+            )
+        ]
+        self.add_entities(self.__debris_shapes)
 
         # Add robot last for draw order reasons.
         self.add_entities([robot])
 
         # Block lookup index.
         self.__ent_index = en.EntityIndex(self.__debris_shapes)
+        
+        self.stage_completed = [False] * self.num_debris
 
     def get_state(self) -> np.ndarray:
         robot_pos = self._robot.body.position
@@ -227,9 +237,53 @@ class SweepToTopEnv(BaseEnv):
         # we're looking for.
         return self.score_on_end_of_traj()
 
+    def _color_reward(self) -> float:
+        #Reward function where the robot should move in the goal area the red block, indipendently from its position
+        #After the robot should move the blue block and finally the yellow one.
+        goal_x, goal_y, goal_h, goal_w = DEFAULT_GOAL_XYHW
+        goal_y_min = goal_y
+        goal_y_max = goal_y + goal_h
+        goal_center_y = (goal_y_min + goal_y_max) / 2
+
+        def in_goal(pos_y):
+            return goal_y_min <= pos_y <= goal_y_max
+
+        ##Sequenatial color reward: Red, Blue, Yellow
+        red_block = next(block for block in self.__debris_shapes if block.color_name == en.ShapeColor.RED)
+        blue_block = next(block for block in self.__debris_shapes if block.color_name == en.ShapeColor.BLUE)
+        yellow_block = next(block for block in self.__debris_shapes if block.color_name == en.ShapeColor.YELLOW)
+
+        red_y = red_block.shape_body.position[1]
+        blue_y = blue_block.shape_body.position[1]
+        yellow_y = yellow_block.shape_body.position[1]
+                
+        red_dist = abs(red_y - goal_y_max)
+        blue_dist = abs(blue_y - goal_y_max)
+        yellow_dist= abs(yellow_y - goal_y_max)
+
+        reward = 0
+        if not self.stage_completed[0]:
+            reward += 1.0 / (1.0 + red_dist)
+            if in_goal(red_y):
+                self.stage_completed[0] = True
+                reward += 1.0
+        # elif not self.stage_completed[1]:
+        #     reward += 1.0 / (1.0 + blue_dist)
+        #     if in_goal(blue_y):
+        #         self.stage_completed[1] = True
+        # elif not self.stage_completed[2]:
+        #     reward += 1.0 / (1.0 + yellow_dist)
+        #     if in_goal(yellow_y):
+        #         self.stage_completed[2] = True
+                    
+        return reward
+            
+        
     def get_reward(self) -> float:
         if self.use_dense_reward:
             return self._dense_reward()
+        if self.use_color_reward:
+            return self._color_reward()
         return self._sparse_reward()
 
     def reset(self) -> np.ndarray:
